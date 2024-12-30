@@ -108,7 +108,11 @@ export class CoinGeckoService {
         return [
             {
                 name: "get_coins",
-                description: "Get a paginated list of all supported coins on CoinGecko",
+                description: `Get a paginated list of all supported coins on CoinGecko. Data up to ${new Date().toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                })}`,
                 parameters: {
                     type: "object",
                     properties: {
@@ -125,7 +129,11 @@ export class CoinGeckoService {
             },
             {
                 name: "find_coin_ids",
-                description: "Find CoinGecko IDs for a list of coin names or symbols",
+                description: `Find CoinGecko IDs for a list of coin names or symbols. Data up to ${new Date().toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                })}`,
                 parameters: {
                     type: "object",
                     properties: {
@@ -181,6 +189,41 @@ export class CoinGeckoService {
                 parameters: {
                     type: "object",
                     properties: {},
+                },
+            },
+            {
+                name: "get_ohlc_data",
+                description: `Get OHLC (Open, High, Low, Close) candlestick data for a specific coin within a time range. Data up to ${new Date().toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                })}`,
+                parameters: {
+                    type: "object",
+                    properties: {
+                        id: {
+                            type: "string",
+                            description: "CoinGecko coin ID",
+                        },
+                        vs_currency: {
+                            type: "string",
+                            description: "Target currency (e.g., 'usd', 'eur')",
+                        },
+                        from: {
+                            type: "number",
+                            description: "Start timestamp (UNIX)",
+                        },
+                        to: {
+                            type: "number",
+                            description: "End timestamp (UNIX)",
+                        },
+                        interval: {
+                            type: "string",
+                            enum: ["daily", "hourly"],
+                            description: "Data interval - daily (up to 180 days) or hourly (up to 31 days)",
+                        },
+                    },
+                    required: ["id", "vs_currency", "from", "to", "interval"],
                 },
             },
         ];

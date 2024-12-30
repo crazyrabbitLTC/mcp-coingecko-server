@@ -55,7 +55,11 @@ export class CoinGeckoMCPServer {
                 tools: [
                     {
                         name: "get-coins",
-                        description: "Get a paginated list of all supported coins on CoinGecko",
+                        description: `Get a paginated list of all supported coins on CoinGecko. Data up to ${new Date().toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        })}`,
                         inputSchema: {
                             type: "object",
                             properties: {
@@ -72,7 +76,11 @@ export class CoinGeckoMCPServer {
                     },
                     {
                         name: "find-coin-ids",
-                        description: "Find CoinGecko IDs for a list of coin names or symbols",
+                        description: `Find CoinGecko IDs for a list of coin names or symbols. Data up to ${new Date().toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        })}`,
                         inputSchema: {
                             type: "object",
                             properties: {
@@ -132,7 +140,11 @@ export class CoinGeckoMCPServer {
                     },
                     {
                         name: "get-ohlc-data",
-                        description: "Get OHLC (Open, High, Low, Close) data for a specific coin within a time range",
+                        description: `Get OHLC (Open, High, Low, Close) data for a specific coin within a time range. Data up to ${new Date().toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        })}`,
                         inputSchema: {
                             type: "object",
                             properties: {

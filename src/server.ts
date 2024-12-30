@@ -82,11 +82,14 @@ export class CoinGeckoMCPServer {
               properties: {
                 page: {
                   type: "number",
-                  description: "Page number (starts from 1)",
+                  description: "Page number (starts from 1, default: 1)",
+                  minimum: 1
                 },
                 pageSize: {
                   type: "number",
-                  description: "Number of items per page (max 1000)",
+                  description: "Results per page (default: 100, max: 1000)",
+                  minimum: 1,
+                  maximum: 1000
                 },
               },
             },
@@ -94,7 +97,7 @@ export class CoinGeckoMCPServer {
           {
             name: "find-coin-ids",
             description:
-              `Find CoinGecko IDs for a list of coin names or symbols. Data up to ${new Date().toLocaleDateString('en-US', { 
+              `Find CoinGecko IDs for a list of coin names or symbols (case-insensitive). Data up to ${new Date().toLocaleDateString('en-US', { 
                 year: 'numeric', 
                 month: 'long', 
                 day: 'numeric' 
@@ -107,7 +110,8 @@ export class CoinGeckoMCPServer {
                   items: {
                     type: "string",
                   },
-                  description: "Array of coin names or symbols to look up",
+                  description: "Array of coin names or symbols to search for (e.g., ['BTC', 'ethereum', 'DOT'])",
+                  maxItems: 100
                 },
               },
               required: ["coins"],
@@ -126,7 +130,7 @@ export class CoinGeckoMCPServer {
               properties: {
                 id: {
                   type: "string",
-                  description: "CoinGecko coin ID",
+                  description: "CoinGecko coin ID (use find-coin-ids to lookup)",
                 },
                 vs_currency: {
                   type: "string",
@@ -134,16 +138,16 @@ export class CoinGeckoMCPServer {
                 },
                 from: {
                   type: "number",
-                  description: "Start timestamp (UNIX)",
+                  description: "Start time in UNIX seconds (not milliseconds, use Math.floor(Date.now()/1000))",
                 },
                 to: {
                   type: "number",
-                  description: "End timestamp (UNIX)",
+                  description: "End time in UNIX seconds (not milliseconds)",
                 },
                 interval: {
                   type: "string",
                   enum: ["5m", "hourly", "daily"],
-                  description: "Data interval (optional)",
+                  description: "Data interval - affects maximum time range: 5m (up to 1 day), hourly (up to 90 days), daily (up to 365 days)",
                 },
               },
               required: ["id", "vs_currency", "from", "to"],
@@ -151,7 +155,7 @@ export class CoinGeckoMCPServer {
           },
           {
             name: "refresh-cache",
-            description: "Refresh the cached list of coins from CoinGecko",
+            description: "Manually update the local cache of CoinGecko coin data (automatically refreshed periodically, only needed if seeing stale data)",
             inputSchema: {
               type: "object",
               properties: {},
@@ -169,7 +173,7 @@ export class CoinGeckoMCPServer {
               properties: {
                 id: {
                   type: "string",
-                  description: "CoinGecko coin ID",
+                  description: "CoinGecko coin ID (use find-coin-ids to lookup)",
                 },
                 vs_currency: {
                   type: "string",
@@ -177,11 +181,11 @@ export class CoinGeckoMCPServer {
                 },
                 from: {
                   type: "number",
-                  description: "Start timestamp (UNIX)",
+                  description: "Start time in UNIX seconds (not milliseconds, use Math.floor(Date.now()/1000))",
                 },
                 to: {
                   type: "number",
-                  description: "End timestamp (UNIX)",
+                  description: "End time in UNIX seconds (not milliseconds)",
                 },
                 interval: {
                   type: "string",
