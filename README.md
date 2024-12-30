@@ -9,7 +9,6 @@ A Model Context Protocol (MCP) server and OpenAI function calling service for in
 - Historical price, market cap, and volume data
 - OHLC (Open, High, Low, Close) candlestick data
 - Local coin cache with refresh capability
-- Support for both MCP and OpenAI function calling
 
 ## Installation
 
@@ -25,72 +24,38 @@ Create a `.env` file in your project root:
 COINGECKO_API_KEY=your_api_key_here
 ```
 
-## Usage as MCP Server
+## Usage with Claude Desktop
 
-### Starting the Server
+Claude Desktop provides full support for MCP features. To use this server:
 
-```typescript
-import { CoinGeckoMCPServer } from 'coingecko-server';
+1. Install [Claude Desktop](https://claude.ai/download)
 
-const server = new CoinGeckoMCPServer(process.env.COINGECKO_API_KEY);
-server.start();
+2. Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS, `%APPDATA%\Claude\claude_desktop_config.json` on Windows):
+
+```json
+{
+  "mcpServers": {
+    "coingecko": {
+      "command": "npx",
+      "args": ["-y", "coingecko-server"],
+      "env": {
+        "COINGECKO_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
 ```
 
-### Available Tools
+3. Restart Claude Desktop
 
-1. **get-coins**
-   - Get a paginated list of supported coins
-   ```json
-   {
-     "page": 1,
-     "pageSize": 100
-   }
-   ```
-
-2. **find-coin-ids**
-   - Look up CoinGecko IDs for coin names/symbols
-   ```json
-   {
-     "coins": ["bitcoin", "ethereum"]
-   }
-   ```
-
-3. **get-historical-data**
-   - Get historical price, market cap, and volume data
-   ```json
-   {
-     "id": "bitcoin",
-     "vs_currency": "usd",
-     "from": 1711296000,
-     "to": 1711382400,
-     "interval": "hourly"
-   }
-   ```
-
-4. **get-ohlc-data**
-   - Get OHLC candlestick data
-   ```json
-   {
-     "id": "bitcoin",
-     "vs_currency": "usd",
-     "from": 1711296000,
-     "to": 1711382400,
-     "interval": "hourly"
-   }
-   ```
-   - Supports intervals:
-     - `hourly`: Up to 31 days of data
-     - `daily`: Up to 180 days of data
-
-5. **refresh-cache**
-   - Refresh the local coin list cache
-   ```json
-   {}
-   ```
+The server provides the following tools:
+- `get-coins`: Get a paginated list of supported coins
+- `find-coin-ids`: Look up CoinGecko IDs for coin names/symbols
+- `get-historical-data`: Get historical price, market cap, and volume data
+- `get-ohlc-data`: Get OHLC candlestick data
+- `refresh-cache`: Refresh the local coin list cache
 
 ## Usage with OpenAI Function Calling
-
-### Setup
 
 ```typescript
 import { CoinGeckoService } from 'coingecko-server';
@@ -101,95 +66,26 @@ const coinGeckoService = new CoinGeckoService(process.env.COINGECKO_API_KEY);
 
 // Get function definitions
 const functions = CoinGeckoService.getOpenAIFunctionDefinitions();
+
+// Example: Get historical data
+const response = await openai.chat.completions.create({
+  model: "gpt-4-turbo-preview",
+  messages: [{ role: "user", content: "Get Bitcoin's price history for the last week" }],
+  functions: [functions[2]], // get_historical_data function
+  function_call: "auto",
+});
+
+if (response.choices[0].message.function_call) {
+  const args = JSON.parse(response.choices[0].message.function_call.arguments);
+  const history = await coinGeckoService.getHistoricalData(
+    args.id,
+    args.vs_currency,
+    args.from,
+    args.to,
+    args.interval
+  );
+}
 ```
-
-### Available Functions
-
-1. **get_coins**
-   ```typescript
-   const response = await openai.chat.completions.create({
-     model: "gpt-4-turbo-preview",
-     messages: [{ role: "user", content: "List the first page of cryptocurrencies" }],
-     functions: [functions[0]], // get_coins function
-     function_call: "auto",
-   });
-
-   if (response.choices[0].message.function_call) {
-     const args = JSON.parse(response.choices[0].message.function_call.arguments);
-     const coins = coinGeckoService.getCoins(args.page, args.pageSize);
-   }
-   ```
-
-2. **find_coin_ids**
-   ```typescript
-   const response = await openai.chat.completions.create({
-     model: "gpt-4-turbo-preview",
-     messages: [{ role: "user", content: "Find IDs for Bitcoin and Ethereum" }],
-     functions: [functions[1]], // find_coin_ids function
-     function_call: "auto",
-   });
-
-   if (response.choices[0].message.function_call) {
-     const args = JSON.parse(response.choices[0].message.function_call.arguments);
-     const ids = coinGeckoService.findCoinIds(args.coins);
-   }
-   ```
-
-3. **get_historical_data**
-   ```typescript
-   const response = await openai.chat.completions.create({
-     model: "gpt-4-turbo-preview",
-     messages: [{ role: "user", content: "Get Bitcoin's price history for the last week" }],
-     functions: [functions[2]], // get_historical_data function
-     function_call: "auto",
-   });
-
-   if (response.choices[0].message.function_call) {
-     const args = JSON.parse(response.choices[0].message.function_call.arguments);
-     const history = await coinGeckoService.getHistoricalData(
-       args.id,
-       args.vs_currency,
-       args.from,
-       args.to,
-       args.interval
-     );
-   }
-   ```
-
-4. **get_ohlc_data**
-   ```typescript
-   const response = await openai.chat.completions.create({
-     model: "gpt-4-turbo-preview",
-     messages: [{ role: "user", content: "Get Bitcoin's OHLC data for the last 24 hours" }],
-     functions: [functions[4]], // get_ohlc_data function
-     function_call: "auto",
-   });
-
-   if (response.choices[0].message.function_call) {
-     const args = JSON.parse(response.choices[0].message.function_call.arguments);
-     const ohlc = await coinGeckoService.getOHLCData(
-       args.id,
-       args.vs_currency,
-       args.from,
-       args.to,
-       args.interval
-     );
-   }
-   ```
-
-5. **refresh_cache**
-   ```typescript
-   const response = await openai.chat.completions.create({
-     model: "gpt-4-turbo-preview",
-     messages: [{ role: "user", content: "Update the coin list" }],
-     functions: [functions[3]], // refresh_cache function
-     function_call: "auto",
-   });
-
-   if (response.choices[0].message.function_call) {
-     await coinGeckoService.refreshCoinList();
-   }
-   ```
 
 ## Data Types
 
