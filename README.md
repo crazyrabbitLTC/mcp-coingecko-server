@@ -30,16 +30,18 @@ Claude Desktop provides full support for MCP features. To use this server:
 
 1. Install [Claude Desktop](https://claude.ai/download)
 
-2. Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS, `%APPDATA%\Claude\claude_desktop_config.json` on Windows):
+2. Add to your Claude Desktop configuration:
+   - On macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - On Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
     "coingecko": {
-      "command": "npx",
-      "args": ["-y", "coingecko-server"],
+      "command": "node",
+      "args": ["/path/to/coingecko-server/build/index.js"],
       "env": {
-        "COINGECKO_API_KEY": "your_api_key_here"
+        "COINGECKO_API_KEY": "your-api-key-here"
       }
     }
   }

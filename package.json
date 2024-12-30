@@ -1,12 +1,12 @@
 {
-  "name": "mcp-coingecko-server",
+  "name": "@modelcontextprotocol/server-coingecko",
   "version": "1.0.2",
   "description": "A Model Context Protocol (MCP) server and OpenAI function calling service for interacting with the CoinGecko Pro API",
   "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "bin": {
-    "coingecko-server": "./build/index.js"
+    "coingecko-server": "build/index.js"
   },
   "scripts": {
     "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
@@ -43,7 +43,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/crazyrabbitLTC/mcp-coingecko-server"
+    "url": "git+https://github.com/crazyrabbitLTC/mcp-coingecko-server.git"
   },
   "bugs": {
     "url": "https://github.com/crazyrabbitLTC/mcp-coingecko-server/issues"

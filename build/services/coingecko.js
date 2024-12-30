@@ -118,11 +118,14 @@ export class CoinGeckoService {
                     properties: {
                         page: {
                             type: "number",
-                            description: "Page number (starts from 1)",
+                            description: "Page number (starts from 1, default: 1)",
+                            minimum: 1
                         },
                         pageSize: {
                             type: "number",
-                            description: "Number of items per page (max 1000)",
+                            description: "Results per page (default: 100, max: 1000)",
+                            minimum: 1,
+                            maximum: 1000
                         },
                     },
                 },
@@ -142,7 +145,8 @@ export class CoinGeckoService {
                             items: {
                                 type: "string",
                             },
-                            description: "Array of coin names or symbols to look up",
+                            description: "Array of coin names or symbols to search for (e.g., ['BTC', 'ethereum', 'DOT'])",
+                            maxItems: 100
                         },
                     },
                     required: ["coins"],
@@ -160,7 +164,7 @@ export class CoinGeckoService {
                     properties: {
                         id: {
                             type: "string",
-                            description: "CoinGecko coin ID",
+                            description: "CoinGecko coin ID (use find_coin_ids to lookup)",
                         },
                         vs_currency: {
                             type: "string",
@@ -168,16 +172,16 @@ export class CoinGeckoService {
                         },
                         from: {
                             type: "number",
-                            description: "Start timestamp (UNIX)",
+                            description: "Start time in UNIX seconds (not milliseconds, use Math.floor(Date.now()/1000))",
                         },
                         to: {
                             type: "number",
-                            description: "End timestamp (UNIX)",
+                            description: "End time in UNIX seconds (not milliseconds)",
                         },
                         interval: {
                             type: "string",
                             enum: ["5m", "hourly", "daily"],
-                            description: "Data interval (optional)",
+                            description: "Data interval - affects maximum time range: 5m (up to 1 day), hourly (up to 90 days), daily (up to 365 days)",
                         },
                     },
                     required: ["id", "vs_currency", "from", "to"],
@@ -185,7 +189,7 @@ export class CoinGeckoService {
             },
             {
                 name: "refresh_cache",
-                description: "Refresh the cached list of coins from CoinGecko",
+                description: "Manually update the local cache of CoinGecko coin data (automatically refreshed periodically, only needed if seeing stale data)",
                 parameters: {
                     type: "object",
                     properties: {},
@@ -203,7 +207,7 @@ export class CoinGeckoService {
                     properties: {
                         id: {
                             type: "string",
-                            description: "CoinGecko coin ID",
+                            description: "CoinGecko coin ID (use find_coin_ids to lookup)",
                         },
                         vs_currency: {
                             type: "string",
@@ -211,11 +215,11 @@ export class CoinGeckoService {
                         },
                         from: {
                             type: "number",
-                            description: "Start timestamp (UNIX)",
+                            description: "Start time in UNIX seconds (not milliseconds, use Math.floor(Date.now()/1000))",
                         },
                         to: {
                             type: "number",
-                            description: "End timestamp (UNIX)",
+                            description: "End time in UNIX seconds (not milliseconds)",
                         },
                         interval: {
                             type: "string",
