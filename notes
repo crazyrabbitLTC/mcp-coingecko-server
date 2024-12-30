@@ -1,0 +1,8 @@
+       description: `Get historical price, market cap, and volume data for a specific coin. Data up to ${new Date().toLocaleDateString(
+          "en-US",
+          {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }
+        )}`,
