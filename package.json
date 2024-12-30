@@ -1,6 +1,6 @@
 {
   "name": "mcp-coingecko-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Model Context Protocol (MCP) server and OpenAI function calling service for interacting with the CoinGecko Pro API",
   "type": "module",
   "main": "build/index.js",
