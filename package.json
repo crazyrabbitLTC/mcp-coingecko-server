@@ -1,22 +1,52 @@
 {
   "name": "mcp-coingecko-server",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "A Model Context Protocol (MCP) server and OpenAI function calling service for interacting with the CoinGecko Pro API",
   "type": "module",
-  "scripts": {
-    "build": "tsc"
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "bin": {
+    "coingecko-server": "./build/index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "prepublishOnly": "npm run build",
+    "start": "node build/index.js"
+  },
+  "files": [
+    "build",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "coingecko",
+    "cryptocurrency",
+    "openai",
+    "claude",
+    "llm"
+  ],
+  "author": "Dennison Bertram & Claude + Anthropic",
+  "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.4",
-    "dotenv": "^16.4.7",
-    "zod": "^3.24.1"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "dotenv": "^16.0.0",
+    "zod": "^3.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
-    "typescript": "^5.7.2"
-  }
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crazyrabbitLTC/mcp-coingecko-server"
+  },
+  "bugs": {
+    "url": "https://github.com/crazyrabbitLTC/mcp-coingecko-server/issues"
+  },
+  "homepage": "https://github.com/crazyrabbitLTC/mcp-coingecko-server#readme"
 }
