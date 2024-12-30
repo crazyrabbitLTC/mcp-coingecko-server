@@ -18,6 +18,14 @@ const GetHistoricalDataArgumentsSchema = z.object({
     to: z.number(),
     interval: z.enum(["5m", "hourly", "daily"]).optional(),
 });
+// Add schema for OHLC arguments
+const GetOHLCDataArgumentsSchema = z.object({
+    id: z.string(),
+    vs_currency: z.string(),
+    from: z.number(),
+    to: z.number(),
+    interval: z.enum(["daily", "hourly"])
+});
 export class CoinGeckoMCPServer {
     server;
     coinGeckoService;
@@ -122,6 +130,37 @@ export class CoinGeckoMCPServer {
                             properties: {},
                         },
                     },
+                    {
+                        name: "get-ohlc-data",
+                        description: "Get OHLC (Open, High, Low, Close) data for a specific coin within a time range",
+                        inputSchema: {
+                            type: "object",
+                            properties: {
+                                id: {
+                                    type: "string",
+                                    description: "CoinGecko coin ID",
+                                },
+                                vs_currency: {
+                                    type: "string",
+                                    description: "Target currency (e.g., 'usd', 'eur')",
+                                },
+                                from: {
+                                    type: "number",
+                                    description: "Start timestamp (UNIX)",
+                                },
+                                to: {
+                                    type: "number",
+                                    description: "End timestamp (UNIX)",
+                                },
+                                interval: {
+                                    type: "string",
+                                    enum: ["daily", "hourly"],
+                                    description: "Data interval - daily (up to 180 days) or hourly (up to 31 days)",
+                                },
+                            },
+                            required: ["id", "vs_currency", "from", "to", "interval"],
+                        },
+                    },
                 ],
             };
         });
@@ -190,6 +229,25 @@ export class CoinGeckoMCPServer {
                             {
                                 type: "text",
                                 text: `Cache refreshed successfully at ${lastUpdated?.toISOString()}`,
+                            },
+                        ],
+                    };
+                }
+                if (name === "get-ohlc-data") {
+                    const { id, vs_currency, from, to, interval } = GetOHLCDataArgumentsSchema.parse(args);
+                    const data = await this.coinGeckoService.getOHLCData(id, vs_currency, from, to, interval);
+                    return {
+                        content: [
+                            {
+                                type: "text",
+                                text: JSON.stringify({
+                                    timeRange: {
+                                        from: new Date(from * 1000).toISOString(),
+                                        to: new Date(to * 1000).toISOString(),
+                                    },
+                                    interval,
+                                    data,
+                                }, null, 2),
                             },
                         ],
                     };

@@ -13,6 +13,14 @@ export interface HistoricalData {
   total_volumes: [number, number][];
 }
 
+export interface OHLCData {
+  timestamp: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+}
+
 export class CoinGeckoService {
   private coins: CoinInfo[] = [];
   private lastUpdated: Date | null = null;
@@ -74,6 +82,49 @@ export class CoinGeckoService {
     }
   }
 
+  async getOHLCData(
+    id: string,
+    vs_currency: string,
+    from: number,
+    to: number,
+    interval: "daily" | "hourly"
+  ): Promise<OHLCData[]> {
+    const url = `${this.baseUrl}/coins/${id}/ohlc/range?vs_currency=${vs_currency}&from=${from}&to=${to}&interval=${interval}`;
+    console.error(`Making request to: ${url}`);
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          "X-Cg-Pro-Api-Key": this.apiKey,
+          "accept": "application/json"
+        },
+      });
+
+      if (!response.ok) {
+        const responseText = await response.text();
+        console.error(`API Response Status: ${response.status} ${response.statusText}`);
+        console.error(`API Response Headers:`, Object.fromEntries(response.headers.entries()));
+        console.error(`API Response Body:`, responseText);
+        throw new Error(`API request failed: ${response.status} ${response.statusText} - ${responseText}`);
+      }
+
+      const data: number[][] = await response.json();
+      
+      // Transform the data into a more readable format
+      // CoinGecko returns [timestamp, open, high, low, close]
+      return data.map(([timestamp, open, high, low, close]) => ({
+        timestamp,
+        open,
+        high,
+        low,
+        close
+      }));
+    } catch (error) {
+      console.error("Error fetching OHLC data:", error);
+      throw error;
+    }
+  }
+
   // Utility methods for accessing cached data
   getCoins(page: number = 1, pageSize: number = 100): CoinInfo[] {
     const start = (page - 1) * pageSize;
@@ -109,7 +160,14 @@ export class CoinGeckoService {
     return [
       {
         name: "get_coins",
-        description: "Get a paginated list of all supported coins on CoinGecko",
+        description: `Get a paginated list of all supported coins on CoinGecko. Data up to ${new Date().toLocaleDateString(
+          "en-US",
+          {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }
+        )}`,
         parameters: {
           type: "object",
           properties: {
@@ -126,7 +184,14 @@ export class CoinGeckoService {
       },
       {
         name: "find_coin_ids",
-        description: "Find CoinGecko IDs for a list of coin names or symbols",
+        description: `Find CoinGecko IDs for a list of coin names or symbols. Data up to ${new Date().toLocaleDateString(
+          "en-US",
+          {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }
+        )}`,
         parameters: {
           type: "object",
           properties: {
@@ -185,6 +250,44 @@ export class CoinGeckoService {
         parameters: {
           type: "object",
           properties: {},
+        },
+      },
+      {
+        name: "get_ohlc_data",
+        description: `Get OHLC (Open, High, Low, Close) candlestick data for a specific coin within a time range. Data up to ${new Date().toLocaleDateString(
+          "en-US",
+          {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }
+        )}`,
+        parameters: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              description: "CoinGecko coin ID",
+            },
+            vs_currency: {
+              type: "string",
+              description: "Target currency (e.g., 'usd', 'eur')",
+            },
+            from: {
+              type: "number",
+              description: "Start timestamp (UNIX)",
+            },
+            to: {
+              type: "number",
+              description: "End timestamp (UNIX)",
+            },
+            interval: {
+              type: "string",
+              enum: ["daily", "hourly"],
+              description: "Data interval - daily (up to 180 days) or hourly (up to 31 days)",
+            },
+          },
+          required: ["id", "vs_currency", "from", "to", "interval"],
         },
       },
     ];

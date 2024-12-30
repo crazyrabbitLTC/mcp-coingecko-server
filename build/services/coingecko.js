@@ -47,6 +47,39 @@ export class CoinGeckoService {
             throw error;
         }
     }
+    async getOHLCData(id, vs_currency, from, to, interval) {
+        const url = `${this.baseUrl}/coins/${id}/ohlc/range?vs_currency=${vs_currency}&from=${from}&to=${to}&interval=${interval}`;
+        console.error(`Making request to: ${url}`);
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    "X-Cg-Pro-Api-Key": this.apiKey,
+                    "accept": "application/json"
+                },
+            });
+            if (!response.ok) {
+                const responseText = await response.text();
+                console.error(`API Response Status: ${response.status} ${response.statusText}`);
+                console.error(`API Response Headers:`, Object.fromEntries(response.headers.entries()));
+                console.error(`API Response Body:`, responseText);
+                throw new Error(`API request failed: ${response.status} ${response.statusText} - ${responseText}`);
+            }
+            const data = await response.json();
+            // Transform the data into a more readable format
+            // CoinGecko returns [timestamp, open, high, low, close]
+            return data.map(([timestamp, open, high, low, close]) => ({
+                timestamp,
+                open,
+                high,
+                low,
+                close
+            }));
+        }
+        catch (error) {
+            console.error("Error fetching OHLC data:", error);
+            throw error;
+        }
+    }
     // Utility methods for accessing cached data
     getCoins(page = 1, pageSize = 100) {
         const start = (page - 1) * pageSize;
