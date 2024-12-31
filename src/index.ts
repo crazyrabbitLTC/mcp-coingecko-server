@@ -12,7 +12,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const apiKey = process.env.COINGECKO_API_KEY;
 
   if (!apiKey) {
-    console.log("COINGECKO_API_KEY is not set in the environment variables");
+    console.error("COINGECKO_API_KEY is not set in the environment variables");
     process.exit(1);
   }
 

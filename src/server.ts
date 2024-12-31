@@ -17,20 +17,22 @@ const FindCoinIdsArgumentsSchema = z.object({
   coins: z.array(z.string()),
 });
 
+// New date string validation
+const DateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Use YYYY-MM-DD");
+
 const GetHistoricalDataArgumentsSchema = z.object({
   id: z.string(),
   vs_currency: z.string(),
-  from: z.number(),
-  to: z.number(),
+  from_date: DateString,
+  to_date: DateString,
   interval: z.enum(["5m", "hourly", "daily"]).optional(),
 });
 
-// Add schema for OHLC arguments
 const GetOHLCDataArgumentsSchema = z.object({
   id: z.string(),
   vs_currency: z.string(),
-  from: z.number(),
-  to: z.number(),
+  from_date: DateString,
+  to_date: DateString,
   interval: z.enum(["daily", "hourly"])
 });
 
@@ -136,13 +138,15 @@ export class CoinGeckoMCPServer {
                   type: "string",
                   description: "Target currency (e.g., 'usd', 'eur')",
                 },
-                from: {
-                  type: "number",
-                  description: "Start time in UNIX seconds (not milliseconds, use Math.floor(Date.now()/1000))",
+                from_date: {
+                  type: "string",
+                  description: "Start date in YYYY-MM-DD format (e.g., '2024-01-01')",
+                  pattern: "^\\d{4}-\\d{2}-\\d{2}$"
                 },
-                to: {
-                  type: "number",
-                  description: "End time in UNIX seconds (not milliseconds)",
+                to_date: {
+                  type: "string",
+                  description: "End date in YYYY-MM-DD format (e.g., '2024-12-30')",
+                  pattern: "^\\d{4}-\\d{2}-\\d{2}$"
                 },
                 interval: {
                   type: "string",
@@ -150,7 +154,7 @@ export class CoinGeckoMCPServer {
                   description: "Data interval - affects maximum time range: 5m (up to 1 day), hourly (up to 90 days), daily (up to 365 days)",
                 },
               },
-              required: ["id", "vs_currency", "from", "to"],
+              required: ["id", "vs_currency", "from_date", "to_date"],
             },
           },
           {
@@ -179,13 +183,15 @@ export class CoinGeckoMCPServer {
                   type: "string",
                   description: "Target currency (e.g., 'usd', 'eur')",
                 },
-                from: {
-                  type: "number",
-                  description: "Start time in UNIX seconds (not milliseconds, use Math.floor(Date.now()/1000))",
+                from_date: {
+                  type: "string",
+                  description: "Start date in YYYY-MM-DD format (e.g., '2024-01-01')",
+                  pattern: "^\\d{4}-\\d{2}-\\d{2}$"
                 },
-                to: {
-                  type: "number",
-                  description: "End time in UNIX seconds (not milliseconds)",
+                to_date: {
+                  type: "string",
+                  description: "End date in YYYY-MM-DD format (e.g., '2024-12-30')",
+                  pattern: "^\\d{4}-\\d{2}-\\d{2}$"
                 },
                 interval: {
                   type: "string",
@@ -193,7 +199,7 @@ export class CoinGeckoMCPServer {
                   description: "Data interval - daily (up to 180 days) or hourly (up to 31 days)",
                 },
               },
-              required: ["id", "vs_currency", "from", "to", "interval"],
+              required: ["id", "vs_currency", "from_date", "to_date", "interval"],
             },
           },
         ],
@@ -249,13 +255,13 @@ export class CoinGeckoMCPServer {
         }
 
         if (name === "get-historical-data") {
-          const { id, vs_currency, from, to, interval } =
+          const { id, vs_currency, from_date, to_date, interval } =
             GetHistoricalDataArgumentsSchema.parse(args);
-          const data = await this.coinGeckoService.getHistoricalData(
+          const data = await this.coinGeckoService.getHistoricalDataByDate(
             id,
             vs_currency,
-            from,
-            to,
+            from_date,
+            to_date,
             interval
           );
 
@@ -266,8 +272,9 @@ export class CoinGeckoMCPServer {
                 text: JSON.stringify(
                   {
                     timeRange: {
-                      from: new Date(from * 1000).toISOString(),
-                      to: new Date(to * 1000).toISOString(),
+                      from: from_date,
+                      to: to_date,
+                      currentTime: new Date().toISOString()
                     },
                     interval: interval || "auto",
                     data,
@@ -295,13 +302,13 @@ export class CoinGeckoMCPServer {
         }
 
         if (name === "get-ohlc-data") {
-          const { id, vs_currency, from, to, interval } =
+          const { id, vs_currency, from_date, to_date, interval } =
             GetOHLCDataArgumentsSchema.parse(args);
-          const data = await this.coinGeckoService.getOHLCData(
+          const data = await this.coinGeckoService.getOHLCDataByDate(
             id,
             vs_currency,
-            from,
-            to,
+            from_date,
+            to_date,
             interval
           );
 
@@ -312,8 +319,9 @@ export class CoinGeckoMCPServer {
                 text: JSON.stringify(
                   {
                     timeRange: {
-                      from: new Date(from * 1000).toISOString(),
-                      to: new Date(to * 1000).toISOString(),
+                      from: from_date,
+                      to: to_date,
+                      currentTime: new Date().toISOString()
                     },
                     interval,
                     data,
@@ -346,5 +354,3 @@ export class CoinGeckoMCPServer {
     console.error("CoinGecko MCP Server running on stdio");
   }
 }
-
-

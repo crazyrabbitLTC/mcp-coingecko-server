@@ -26,7 +26,24 @@ export class CoinGeckoService {
             throw error;
         }
     }
-    async getHistoricalData(id, vs_currency, from, to, interval) {
+    validateDateRange(fromDate, toDate) {
+        const now = new Date();
+        const from = new Date(fromDate);
+        const to = new Date(toDate);
+        if (from > now || to > now) {
+            throw new Error("Cannot request future dates");
+        }
+        if (from > to) {
+            throw new Error("Start date must be before end date");
+        }
+    }
+    async getHistoricalDataByDate(id, vs_currency, fromDate, // Format: YYYY-MM-DD
+    toDate, // Format: YYYY-MM-DD
+    interval) {
+        this.validateDateRange(fromDate, toDate);
+        // Convert dates to timestamps
+        const from = Math.floor(new Date(fromDate).getTime() / 1000);
+        const to = Math.floor(new Date(toDate).getTime() / 1000);
         let url = `${this.baseUrl}/coins/${id}/market_chart/range?vs_currency=${vs_currency}&from=${from}&to=${to}`;
         if (interval) {
             url += `&interval=${interval}`;
@@ -47,7 +64,13 @@ export class CoinGeckoService {
             throw error;
         }
     }
-    async getOHLCData(id, vs_currency, from, to, interval) {
+    async getOHLCDataByDate(id, vs_currency, fromDate, // Format: YYYY-MM-DD
+    toDate, // Format: YYYY-MM-DD
+    interval) {
+        this.validateDateRange(fromDate, toDate);
+        // Convert dates to timestamps
+        const from = Math.floor(new Date(fromDate).getTime() / 1000);
+        const to = Math.floor(new Date(toDate).getTime() / 1000);
         const url = `${this.baseUrl}/coins/${id}/ohlc/range?vs_currency=${vs_currency}&from=${from}&to=${to}&interval=${interval}`;
         console.error(`Making request to: ${url}`);
         try {
@@ -80,6 +103,19 @@ export class CoinGeckoService {
             throw error;
         }
     }
+    // Convenience methods for common time ranges
+    async getLast7Days(id, vs_currency) {
+        const end = new Date();
+        const start = new Date();
+        start.setDate(start.getDate() - 7);
+        return this.getHistoricalDataByDate(id, vs_currency, start.toISOString().split('T')[0], end.toISOString().split('T')[0], 'daily');
+    }
+    async getLast30Days(id, vs_currency) {
+        const end = new Date();
+        const start = new Date();
+        start.setDate(start.getDate() - 30);
+        return this.getHistoricalDataByDate(id, vs_currency, start.toISOString().split('T')[0], end.toISOString().split('T')[0], 'daily');
+    }
     // Utility methods for accessing cached data
     getCoins(page = 1, pageSize = 100) {
         const start = (page - 1) * pageSize;
@@ -105,6 +141,7 @@ export class CoinGeckoService {
     }
     // Function calling schema definitions for different LLM providers
     static getOpenAIFunctionDefinitions() {
+        const currentDate = new Date().toISOString().split('T')[0]; // Today's date in YYYY-MM-DD format
         return [
             {
                 name: "get_coins",
@@ -170,13 +207,15 @@ export class CoinGeckoService {
                             type: "string",
                             description: "Target currency (e.g., 'usd', 'eur')",
                         },
-                        from: {
-                            type: "number",
-                            description: "Start time in UNIX seconds (not milliseconds, use Math.floor(Date.now()/1000))",
+                        from_date: {
+                            type: "string",
+                            description: "Start date in YYYY-MM-DD format (e.g., '2024-01-01')",
+                            pattern: "^\\d{4}-\\d{2}-\\d{2}$"
                         },
-                        to: {
-                            type: "number",
-                            description: "End time in UNIX seconds (not milliseconds)",
+                        to_date: {
+                            type: "string",
+                            description: "End date in YYYY-MM-DD format (e.g., '2024-12-30')",
+                            pattern: "^\\d{4}-\\d{2}-\\d{2}$"
                         },
                         interval: {
                             type: "string",
@@ -184,7 +223,7 @@ export class CoinGeckoService {
                             description: "Data interval - affects maximum time range: 5m (up to 1 day), hourly (up to 90 days), daily (up to 365 days)",
                         },
                     },
-                    required: ["id", "vs_currency", "from", "to"],
+                    required: ["id", "vs_currency", "from_date", "to_date"],
                 },
             },
             {
@@ -213,13 +252,15 @@ export class CoinGeckoService {
                             type: "string",
                             description: "Target currency (e.g., 'usd', 'eur')",
                         },
-                        from: {
-                            type: "number",
-                            description: "Start time in UNIX seconds (not milliseconds, use Math.floor(Date.now()/1000))",
+                        from_date: {
+                            type: "string",
+                            description: "Start date in YYYY-MM-DD format (e.g., '2024-01-01')",
+                            pattern: "^\\d{4}-\\d{2}-\\d{2}$"
                         },
-                        to: {
-                            type: "number",
-                            description: "End time in UNIX seconds (not milliseconds)",
+                        to_date: {
+                            type: "string",
+                            description: "End date in YYYY-MM-DD format (e.g., '2024-12-30')",
+                            pattern: "^\\d{4}-\\d{2}-\\d{2}$"
                         },
                         interval: {
                             type: "string",
@@ -227,7 +268,7 @@ export class CoinGeckoService {
                             description: "Data interval - daily (up to 180 days) or hourly (up to 31 days)",
                         },
                     },
-                    required: ["id", "vs_currency", "from", "to", "interval"],
+                    required: ["id", "vs_currency", "from_date", "to_date", "interval"],
                 },
             },
         ];
