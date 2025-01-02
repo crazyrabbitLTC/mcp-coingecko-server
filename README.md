@@ -2,6 +2,8 @@
 
 A Model Context Protocol (MCP) server and OpenAI function calling service for interacting with the CoinGecko Pro API.
 
+<a href="https://glama.ai/mcp/servers/l0na8tkwaa"><img width="380" height="200" src="https://glama.ai/mcp/servers/l0na8tkwaa/badge" alt="CoinGecko Server MCP server" /></a>
+
 ## Features
 
 - Paginated list of supported cryptocurrencies
