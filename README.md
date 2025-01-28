@@ -1,4 +1,5 @@
 # CoinGecko Server
+[![smithery badge](https://smithery.ai/badge/@crazyrabbitLTC/coingecko)](https://smithery.ai/server/@crazyrabbitLTC/coingecko)
 
 A Model Context Protocol (MCP) server and OpenAI function calling service for interacting with the CoinGecko Pro API.
 
@@ -12,6 +13,15 @@ A Model Context Protocol (MCP) server and OpenAI function calling service for in
 
 ## Installation
 
+### Installing via Smithery
+
+To install CoinGecko Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@crazyrabbitLTC/coingecko):
+
+```bash
+npx -y @smithery/cli install @crazyrabbitLTC/coingecko --client claude
+```
+
+### Manual Installation
 ```bash
 npm install coingecko-server
 ```
