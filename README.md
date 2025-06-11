@@ -1,3 +1,8 @@
+Update: CoinGecko now has an official MCP server: 
+https://docs.coingecko.com/reference/mcp-server
+
+I recomend you use that one, as I probably won't update or keep this one current. 
+
 # CoinGecko Server
 
 A Model Context Protocol (MCP) server and OpenAI function calling service for interacting with the CoinGecko Pro API.
