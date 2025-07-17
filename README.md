@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/crazyrabbitltc-mcp-coingecko-server-badge.png)](https://mseep.ai/app/crazyrabbitltc-mcp-coingecko-server)
+
 # CoinGecko Server
 
 A Model Context Protocol (MCP) server and OpenAI function calling service for interacting with the CoinGecko Pro API.
